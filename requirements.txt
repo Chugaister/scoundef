@@ -2,3 +2,5 @@ python-dotenv~=1.0.1
 uvicorn~=0.29.0
 fastapi~=0.111.0
 twilio~=9.1.0
+aiohttp~=3.9.5
+pyngrok~=7.1.6
