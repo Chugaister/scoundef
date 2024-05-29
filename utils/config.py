@@ -21,6 +21,8 @@ class Config:
         self.SSL_CA_BUNDLE_FILE_PATH = self.get_var("SSL_CA_BUNDLE_FILE_PATH", optional=True)
         self.NGROK_AUTH_TOKEN = self.get_var("NGROK_AUTH_TOKEN", optional=True)
         self.ANTHROPIC_API_KEY = self.get_var("ANTHROPIC_API_KEY")
+        self.SOCKET_PORT = self.get_var("SOCKET_PORT")
+        self.PUBLIC_IP = self.get_var("PUBLIC_IP")
 
     @staticmethod
     def get_var(item: str, optional: bool = False):
