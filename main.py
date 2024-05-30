@@ -8,5 +8,6 @@ if __name__ == "__main__":
         port=config.PORT,
         ssl_certfile=config.SSL_CERTFILE_PATH,
         ssl_keyfile=config.SSL_KEYFILE_PATH,
-        ssl_ca_certs=config.SSL_CA_BUNDLE_FILE_PATH
+        ssl_ca_certs=config.SSL_CA_BUNDLE_FILE_PATH,
+        log_level="warning"
     )
