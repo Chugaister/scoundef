@@ -44,7 +44,7 @@ async def voice(
         response.say("Redirecting to recipient. Please wait a moment")
         response.dial(data["recipient"])
         return Response(content=str(response), headers={"Content-Type": "text/xml"})
-    if From == "hidden":
+    if From == "anonymous":
         pass
         # conv_engine = ConversationFactory.hidden(CallSid)
         # response.say(conv_engine.start_message)
@@ -78,10 +78,10 @@ async def gather_unknown(SpeechResult: str = Form(), CallSid: str = Form()) -> R
     current_response = conv_engine.handle_user_input(SpeechResult)
     response.say(current_response)
     if conv_engine.system_action == SystemAction.accept:
-        response.dial(number=data["recipient"])
+        response.dial(number=data["caretaker"])
         conv_engine.finish()
     elif conv_engine.system_action == SystemAction.decline:
-        response.dial(number=data["recipient"])
+        response.hangup()
         conv_engine.finish()
     elif conv_engine.system_action == SystemAction.continue_:
         response.gather(input='speech', action=f'{config.PUBLIC_URL}/api/twilio/gather_unknown', timeout=2)
