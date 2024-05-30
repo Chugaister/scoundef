@@ -36,6 +36,7 @@ conv_engine: Conversation | None = None
 @tw_router.post("/voice")
 async def voice(
         From: str = Form(),
+        To: str = Form(),
         CallSid: str = Form()
 ):
     response = VoiceResponse()
@@ -51,7 +52,7 @@ async def voice(
         # return Response(content=str(response), headers={"Content-Type": "text/xml"})
     else:
         global conv_engine
-        conv_engine = ConversationFactory.unknown(CallSid)
+        conv_engine = ConversationFactory.unknown(CallSid, From, To)
         response.say(conv_engine.start_message)
         response.gather(input='speech', action=f'{config.PUBLIC_URL}/api/twilio/gather_unknown', timeout=2)
         return Response(content=str(response), headers={"Content-Type": "text/xml"})
@@ -63,9 +64,9 @@ async def gather_hidden(SpeechResult: str = Form(), CallSid: str = Form()) -> Re
     current_response = conv_engine.handle_user_input(SpeechResult)
     response.say(current_response)
     if conv_engine.system_action == SystemAction.accept:
-        response.dial(number=data["recipient"])
+        response.dial(number=data["caretaker"])
     elif conv_engine.system_action == SystemAction.decline:
-        response.dial(number=data["recipient"])
+        response.dial(number=data["caretaker"])
     elif conv_engine.system_action == SystemAction.accept:
         response.gather(input='speech', action=f'{config.PUBLIC_URL}/api/twilio/gather', timeout=2)
     return Response(content=str(response), headers={"Content-Type": "text/xml"})
@@ -78,8 +79,10 @@ async def gather_unknown(SpeechResult: str = Form(), CallSid: str = Form()) -> R
     response.say(current_response)
     if conv_engine.system_action == SystemAction.accept:
         response.dial(number=data["recipient"])
+        conv_engine.finish()
     elif conv_engine.system_action == SystemAction.decline:
         response.dial(number=data["recipient"])
+        conv_engine.finish()
     elif conv_engine.system_action == SystemAction.continue_:
         response.gather(input='speech', action=f'{config.PUBLIC_URL}/api/twilio/gather_unknown', timeout=2)
     return Response(content=str(response), headers={"Content-Type": "text/xml"})
