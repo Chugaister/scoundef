@@ -1,6 +1,8 @@
 from enum import Enum
 from anthropic import Anthropic
 from utils.config import config
+from database.db import history
+from random import randint
 
 
 class SystemAction(str, Enum):
@@ -15,10 +17,26 @@ class Conversation:
         api_key=config.ANTHROPIC_API_KEY,
     )
 
-    def __init__(self, system_prompt: str, start_message: str, call_sid: str):
+    def __init__(self, system_prompt: str, start_message: str, call_sid: str, from_: str, to_: str):
+        self.history_dict = {
+            "call_sid": call_sid,
+            "from_": from_,
+            "to_": to_,
+            "status": "active",
+            "threat": None,
+            "messages": [
+              {
+                "from_": "assistant",
+                "content": start_message
+              }
+            ]
+        }
+        history.append(self.history_dict)
         self.system_prompt = system_prompt
         self.start_message = start_message
         self.call_sid = call_sid
+        self.from_ = from_
+        self.to_ = to_
         self.messages = []
         self.system_action: SystemAction = SystemAction.continue_
 
@@ -73,8 +91,20 @@ class Conversation:
 
     def handle_user_input(self, user_input: str) -> str:
         print("User:\n", user_input, "\n")
+        self.history_dict["messages"].append({
+            "from_": "user",
+            "content": user_input
+        })
         current_response = self._get_response(user_input)
         self.system_action = self.define_system_action(current_response)
         sanitised_response = self._sanitize_response(current_response)
         print("AI secretary:\n", sanitised_response, "\n")
+        self.history_dict["messages"].append({
+            "from_": "assistant",
+            "content": sanitised_response
+        })
         return sanitised_response
+
+    def finish(self):
+        self.history_dict["status"] = "finished"
+        self.history_dict["threat"] = randint(4, 7)
