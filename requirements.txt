@@ -5,3 +5,4 @@ twilio~=9.1.0
 aiohttp~=3.9.5
 pyngrok~=7.1.6
 anthropic~=0.26.1
+pydantic~=2.7.1
