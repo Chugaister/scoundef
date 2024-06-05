@@ -98,7 +98,7 @@ class Conversation:
         current_response = self._get_response(user_input)
         self.system_action = self.define_system_action(current_response)
         sanitised_response = self._sanitize_response(current_response)
-        print("AI secretary:\n", sanitised_response, "\n")
+        print("AI secretary:\n", current_response, "\n")
         self.history_dict["messages"].append({
             "from_": "assistant",
             "content": sanitised_response

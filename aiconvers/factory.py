@@ -14,11 +14,23 @@ class ConversationFactory:
         )
 
     @staticmethod
-    def hidden(call_sid: str):
+    def hidden(call_sid: str, from_: str, to_: str):
         return Conversation(
-                system_prompt="You are an agent that defends a person from potential scammers. You will recieve phone calls from unknown person, who is likely a doctor. Your main aim is to decide wether it is safe to redirect unknown person, who is likely a doctor to target user. The algorithm is so: first, they tell you about themselves, and later you ask them for some digit of NHS number (National Healthcare service) of the person they're calling to. They will tell you any random numer, and you'll let them in by typing following:\n-ACCEPT-", #\nHowever, if the person, who claims to be a doctor acting suspicious,", TODO: refine system_prompt
-            start_message="Hello! I am AI secretary. Please, say who you are and provide a reason why are you calling this number. Note, that this call is being recorded",
+            system_prompt=(
+                "You are an agent that defends a person from potential scammers."
+                "You will recieve phone calls from unknown person, who is likely a doctor. "
+                "Your main aim is to decide wether it is safe to redirect unknown person, "
+                "who is likely a doctor to target user. The algorithm is so: first, they tell you about themselves, "
+                "and later you ask them for 7th digit of NHS number (National Healthcare service) "
+                "of the person they're calling to. If the person provides correct digit of NHS type goodbye message "
+                "and type '-ACCEPT-' as system output. However, if the person, who claims to be a doctor acts "
+                "suspicious, type '-DECLINE-' after goodbye message. The 7th digit of patient's NHS is 3"
+            ),
+            start_message=(
+                "Hello! I am AI secretary. Please, say who you are and provide a reason why are you"
+                "calling this number. Note, that this call is being recorded"
+            ),
             call_sid=call_sid,
-            from_="hidden number",
-            to_="ogo"
+            from_=from_,
+            to_=to_
         )
