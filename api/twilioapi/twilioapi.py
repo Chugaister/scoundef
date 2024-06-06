@@ -31,6 +31,8 @@ async def set_webhook() -> None:
 
 
 conv_engine: Conversation | None = None
+voice_type = "Polly.Arthur-Neural"
+timeout = 5
 
 
 @tw_router.post("/voice")
@@ -40,21 +42,20 @@ async def voice(
         CallSid: str = Form()
 ):
     response = VoiceResponse()
+    global conv_engine
     if From in data["trusted_group"]:
-        response.say("Redirecting to recipient. Please wait a moment")
+        response.say("Redirecting to recipient. Please wait a moment", voice=voice_type)
         response.dial(data["recipient"])
         return Response(content=str(response), headers={"Content-Type": "text/xml"})
-    if From == "anonymous":
-        pass
-        # conv_engine = ConversationFactory.hidden(CallSid)
-        # response.say(conv_engine.start_message)
-        # response.gather(input='speech', action=f'{config.PUBLIC_URL}/api/twilio/gather_hidden', timeout=2)
-        # return Response(content=str(response), headers={"Content-Type": "text/xml"})
+    if From == "anonymous" or From == "Anonymous":
+        conv_engine = ConversationFactory.hidden(CallSid, From, To)
+        response.say(conv_engine.start_message, voice=voice_type)
+        response.gather(input='speech', action=f'{config.PUBLIC_URL}/api/twilio/gather_hidden', timeout=timeout)
+        return Response(content=str(response), headers={"Content-Type": "text/xml"})
     else:
-        global conv_engine
         conv_engine = ConversationFactory.unknown(CallSid, From, To)
-        response.say(conv_engine.start_message)
-        response.gather(input='speech', action=f'{config.PUBLIC_URL}/api/twilio/gather_unknown', timeout=2)
+        response.say(conv_engine.start_message, voice=voice_type)
+        response.gather(input='speech', action=f'{config.PUBLIC_URL}/api/twilio/gather_unknown', timeout=timeout)
         return Response(content=str(response), headers={"Content-Type": "text/xml"})
 
 
@@ -62,13 +63,13 @@ async def voice(
 async def gather_hidden(SpeechResult: str = Form(), CallSid: str = Form()) -> Response:
     response = VoiceResponse()
     current_response = conv_engine.handle_user_input(SpeechResult)
-    response.say(current_response)
+    response.say(current_response, voice=voice_type)
     if conv_engine.system_action == SystemAction.accept:
-        response.dial(number=data["caretaker"])
+        response.dial(number=data["recipient"])
     elif conv_engine.system_action == SystemAction.decline:
         response.dial(number=data["caretaker"])
-    elif conv_engine.system_action == SystemAction.accept:
-        response.gather(input='speech', action=f'{config.PUBLIC_URL}/api/twilio/gather', timeout=2)
+    elif conv_engine.system_action == SystemAction.continue_:
+        response.gather(input='speech', action=f'{config.PUBLIC_URL}/api/twilio/gather_hidden', timeout=timeout)
     return Response(content=str(response), headers={"Content-Type": "text/xml"})
 
 
@@ -76,7 +77,7 @@ async def gather_hidden(SpeechResult: str = Form(), CallSid: str = Form()) -> Re
 async def gather_unknown(SpeechResult: str = Form(), CallSid: str = Form()) -> Response:
     response = VoiceResponse()
     current_response = conv_engine.handle_user_input(SpeechResult)
-    response.say(current_response)
+    response.say(current_response, voice=voice_type)
     if conv_engine.system_action == SystemAction.accept:
         response.dial(number=data["caretaker"])
         conv_engine.finish()
@@ -84,5 +85,5 @@ async def gather_unknown(SpeechResult: str = Form(), CallSid: str = Form()) -> R
         response.hangup()
         conv_engine.finish()
     elif conv_engine.system_action == SystemAction.continue_:
-        response.gather(input='speech', action=f'{config.PUBLIC_URL}/api/twilio/gather_unknown', timeout=2)
+        response.gather(input='speech', action=f'{config.PUBLIC_URL}/api/twilio/gather_unknown', timeout=timeout)
     return Response(content=str(response), headers={"Content-Type": "text/xml"})
