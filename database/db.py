@@ -1,9 +1,10 @@
 from json import load
+from utils.config import config
 
 data = {}
 
 
-with open("database/devdata.json", "r", encoding="utf-8") as file:
+with open(config.DATA_FILE_PATH, "r", encoding="utf-8") as file:
     data = load(file)
 
 

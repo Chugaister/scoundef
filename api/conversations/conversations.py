@@ -1,8 +1,10 @@
 from fastapi import APIRouter
+from fastapi import WebSocket
+from fastapi import WebSocketDisconnect
 from typing import List
 from schemas.conversations import Conversation
 from database.db import history
-from utils.exceptions import NotFoundException
+from utils.wsmanager import manager
 
 cnv_router = APIRouter(tags=["Conversations"])
 
@@ -12,8 +14,11 @@ async def get_all() -> List[Conversation]:
     return history[::-1]
 
 
-# @cnv_router.get("/live")
-# async def get_live() -> Conversation:
-#     if len(history) == 0 or history[-1]["status"] != "active":
-#         raise NotFoundException("There are no active conversations")
-#     return history[-1]
+@cnv_router.websocket("/stream")
+async def websocket_endpoint(websocket: WebSocket):
+    await manager.connect(websocket)
+    try:
+        while True:
+            await websocket.receive_text()  # Keep the connection open
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
