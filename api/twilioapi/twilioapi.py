@@ -3,6 +3,7 @@ from fastapi import Form
 from fastapi import Response
 from aiohttp import ClientSession
 from aiohttp import BasicAuth
+from typing import Optional
 
 from aiconvers.factory import ConversationFactory
 from aiconvers.claude import SystemAction
@@ -12,7 +13,7 @@ from twilio.twiml.voice_response import VoiceResponse
 from database.db import data
 
 
-tw_router = APIRouter()
+tw_router = APIRouter(tags=["Twilio API"])
 
 
 async def set_webhook() -> None:
@@ -55,28 +56,40 @@ async def voice(
     else:
         conv_engine = ConversationFactory.unknown(CallSid, From, To)
         response.say(conv_engine.start_message, voice=voice_type)
-        response.gather(input='speech', action=f'{config.PUBLIC_URL}/api/twilio/gather_unknown', timeout=timeout)
+        response.gather(
+            input='speech',
+            action=f'{config.PUBLIC_URL}/api/twilio/gather_unknown',
+            timeout=timeout,
+            partial_result_callback=f'{config.PUBLIC_URL}/api/twilio/partial_result',
+            partial_result_callback_method="POST"
+        )
         return Response(content=str(response), headers={"Content-Type": "text/xml"})
 
 
 @tw_router.post("/gather_hidden")
 async def gather_hidden(SpeechResult: str = Form(), CallSid: str = Form()) -> Response:
     response = VoiceResponse()
-    current_response = conv_engine.handle_user_input(SpeechResult)
+    current_response = await conv_engine.handle_user_input(SpeechResult)
     response.say(current_response, voice=voice_type)
     if conv_engine.system_action == SystemAction.accept:
         response.dial(number=data["recipient"])
     elif conv_engine.system_action == SystemAction.decline:
         response.dial(number=data["caretaker"])
     elif conv_engine.system_action == SystemAction.continue_:
-        response.gather(input='speech', action=f'{config.PUBLIC_URL}/api/twilio/gather_hidden', timeout=timeout)
+        response.gather(
+            input='speech',
+            action=f'{config.PUBLIC_URL}/api/twilio/gather_hidden',
+            timeout=timeout,
+            partial_result_callback=f'{config.PUBLIC_URL}/api/twilio/partial_result',
+            partial_result_callback_method="POST"
+        )
     return Response(content=str(response), headers={"Content-Type": "text/xml"})
 
 
 @tw_router.post("/gather_unknown")
 async def gather_unknown(SpeechResult: str = Form(), CallSid: str = Form()) -> Response:
     response = VoiceResponse()
-    current_response = conv_engine.handle_user_input(SpeechResult)
+    current_response = await conv_engine.handle_user_input(SpeechResult)
     response.say(current_response, voice=voice_type)
     if conv_engine.system_action == SystemAction.accept:
         response.dial(number=data["caretaker"])
@@ -87,3 +100,10 @@ async def gather_unknown(SpeechResult: str = Form(), CallSid: str = Form()) -> R
     elif conv_engine.system_action == SystemAction.continue_:
         response.gather(input='speech', action=f'{config.PUBLIC_URL}/api/twilio/gather_unknown', timeout=timeout)
     return Response(content=str(response), headers={"Content-Type": "text/xml"})
+
+
+@tw_router.post("/partial_result")
+async def get_partial_result(
+        UnstableSpeechResult: Optional[str] = Form(default=None)
+):
+    pass

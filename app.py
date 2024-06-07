@@ -1,13 +1,24 @@
 from fastapi import FastAPI
+from fastapi import Request
+from fastapi.responses import JSONResponse
 from api import api_router
 from api.twilioapi.twilioapi import set_webhook
 from sys import argv
 from utils.ngrok_tunnel import create_tunnel
 from utils.config import config
+from utils.exceptions import CustomException
 
 
 app = FastAPI()
 app.include_router(api_router, prefix="/api")
+
+
+@app.exception_handler(CustomException)
+async def custom_exception_handler(request: Request, exc: CustomException):
+    return JSONResponse(
+        status_code=exc.code,
+        content={"error_code": exc.error_code, "message": exc.message},
+    )
 
 
 @app.on_event("startup")
