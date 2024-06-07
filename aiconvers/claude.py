@@ -1,5 +1,6 @@
 from enum import Enum
 from anthropic import Anthropic
+from anthropic import AsyncAnthropic
 from utils.config import config
 from database.db import history
 from random import randint
@@ -13,7 +14,7 @@ class SystemAction(str, Enum):
 
 class Conversation:
 
-    client = Anthropic(
+    client = AsyncAnthropic(
         api_key=config.ANTHROPIC_API_KEY,
     )
 
@@ -40,7 +41,7 @@ class Conversation:
         self.messages = []
         self.system_action: SystemAction = SystemAction.continue_
 
-    def _get_response(
+    async def _get_response(
             self,
             user_input: str
     ) -> str:
@@ -54,7 +55,7 @@ class Conversation:
             ]
         }
         self.messages.append(new_user_message)
-        new_assistant_message = self.client.messages.create(
+        new_assistant_message = await self.client.messages.create(
             model="claude-3-opus-20240229",
             max_tokens=1000,
             temperature=0,
@@ -89,13 +90,13 @@ class Conversation:
         current_response = current_response.strip()
         return current_response
 
-    def handle_user_input(self, user_input: str) -> str:
+    async def handle_user_input(self, user_input: str) -> str:
         print("User:\n", user_input, "\n")
         self.history_dict["messages"].append({
             "from_": "user",
             "content": user_input
         })
-        current_response = self._get_response(user_input)
+        current_response = await self._get_response(user_input)
         self.system_action = self.define_system_action(current_response)
         sanitised_response = self._sanitize_response(current_response)
         print("AI secretary:\n", current_response, "\n")

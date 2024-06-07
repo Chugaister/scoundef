@@ -1,7 +1,9 @@
 from pydantic import BaseModel
+from pydantic import Field
 from typing import List
 from typing import Optional
 from enum import Enum
+from datetime import datetime
 
 
 class MessageFrom(str, Enum):
@@ -23,6 +25,7 @@ class Conversation(BaseModel):
     call_sid: str
     from_: str
     to_: str
+    timestamp: datetime = Field(default=datetime.utcnow())
     threat: Optional[int]
     status: ConversationStatus
     messages: List[Message]
