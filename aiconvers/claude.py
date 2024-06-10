@@ -1,9 +1,11 @@
 from enum import Enum
-from anthropic import Anthropic
+from datetime import datetime
 from anthropic import AsyncAnthropic
 from utils.config import config
 from database.db import history
+from database.db import data
 from random import randint
+from schemas.conversations import Group
 
 
 class SystemAction(str, Enum):
@@ -19,10 +21,20 @@ class Conversation:
     )
 
     def __init__(self, system_prompt: str, start_message: str, call_sid: str, from_: str, to_: str):
+        if from_ in data["allowed_list"]:
+            group = Group.allowed_list
+        elif from_ in data["trusted_group"]:
+            group = Group.trusted_group
+        elif from_.lower() == "anonymous":
+            group = Group.hidden
+        else:
+            group = Group.unknown
         self.history_dict = {
             "call_sid": call_sid,
             "from_": from_,
             "to_": to_,
+            "group": group,
+            "timestamp": datetime.utcnow(),
             "status": "active",
             "threat": None,
             "messages": [
@@ -108,4 +120,4 @@ class Conversation:
 
     def finish(self):
         self.history_dict["status"] = "finished"
-        self.history_dict["threat"] = randint(4, 7)
+        self.history_dict["threat"] = randint(3, 6)

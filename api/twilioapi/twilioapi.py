@@ -13,7 +13,7 @@ from aiconvers.claude import SystemAction
 from aiconvers.claude import Conversation
 from utils.config import config
 from utils.wsmanager import manager
-from twilio.twiml.voice_response import VoiceResponse
+from utils.twcustom import CustomVoiceResponse
 from database.db import data
 
 
@@ -36,13 +36,6 @@ async def set_webhook() -> None:
 
 
 conv_engine: Conversation | None = None
-voice_type = "Polly.Arthur-Neural"
-
-# gather parameters
-timeout = 3
-language = "en-GB"
-speechModel = "phone_call"      # phone_call | experimental_conversations | default
-enhanced = "true"               # true | false
 
 
 @tw_router.post("/voice")
@@ -51,51 +44,36 @@ async def voice(
         To: str = Form(),
         CallSid: str = Form()
 ):
-    response = VoiceResponse()
+    response = CustomVoiceResponse()
     global conv_engine
     if From in data["trusted_group"]:
         text = "Redirecting to recipient. Please wait a moment"
-        response.say(text, voice=voice_type)
+        response.say(text)
         create_task(stream_ai_response(text))
         response.dial(data["recipient"])
         return Response(content=str(response), headers={"Content-Type": "text/xml"})
     if From == "anonymous" or From == "Anonymous":
         conv_engine = ConversationFactory.hidden(CallSid, From, To)
-        response.say(conv_engine.start_message, voice=voice_type)
-        create_task(stream_ai_response(conv_engine.start_message))
-        response.gather(
-            input='speech',
-            language=language,
-            action=f'{config.PUBLIC_URL}/api/twilio/gather_hidden',
-            timeout=timeout,
-            partial_result_callback=f'{config.PUBLIC_URL}/api/twilio/partial_result',
-            partial_result_callback_method="POST",
-            speech_model=speechModel,
-            enhanced=enhanced
-        )
-        return Response(content=str(response), headers={"Content-Type": "text/xml"})
+        action = f'{config.PUBLIC_URL}/api/twilio/gather_hidden'
     else:
         conv_engine = ConversationFactory.unknown(CallSid, From, To)
-        response.say(conv_engine.start_message, voice=voice_type)
-        create_task(stream_ai_response(conv_engine.start_message))
-        response.gather(
-            input='speech',
-            language=language,
-            action=f'{config.PUBLIC_URL}/api/twilio/gather_unknown',
-            timeout=timeout,
-            partial_result_callback=f'{config.PUBLIC_URL}/api/twilio/partial_result',
-            partial_result_callback_method="POST",
-            speech_model=speechModel,
-            enhanced=enhanced
-        )
-        return Response(content=str(response), headers={"Content-Type": "text/xml"})
+        action = f"{config.PUBLIC_URL}/api/twilio/gather_unknown"
+    response.say(conv_engine.start_message)
+    create_task(stream_ai_response(conv_engine.start_message))
+    response.gather(
+        action=action,
+        partial_result_callback=f'{config.PUBLIC_URL}/api/twilio/partial_result',
+        action_on_empty_result=f'{config.PUBLIC_URL}/api/twilio/no_input'
+    )
+    response.redirect(f"{config.PUBLIC_URL}/api/twilio/no_input")
+    return Response(content=str(response), headers={"Content-Type": "text/xml"})
 
 
 @tw_router.post("/gather_hidden")
-async def gather_hidden(SpeechResult: str = Form(), CallSid: str = Form()) -> Response:
-    response = VoiceResponse()
+async def gather_hidden(SpeechResult: str = Form(default=None), CallSid: str = Form()) -> Response:
+    response = CustomVoiceResponse()
     current_response = await conv_engine.handle_user_input(SpeechResult)
-    response.say(current_response, voice=voice_type)
+    response.say(current_response)
     create_task(stream_ai_response(current_response))
     if conv_engine.system_action == SystemAction.accept:
         response.dial(number=data["recipient"])
@@ -103,23 +81,18 @@ async def gather_hidden(SpeechResult: str = Form(), CallSid: str = Form()) -> Re
         response.dial(number=data["caretaker"])
     elif conv_engine.system_action == SystemAction.continue_:
         response.gather(
-            input='speech',
-            language=language,
             action=f'{config.PUBLIC_URL}/api/twilio/gather_hidden',
-            timeout=timeout,
             partial_result_callback=f'{config.PUBLIC_URL}/api/twilio/partial_result',
-            partial_result_callback_method="POST",
-            speech_model=speechModel,
-            enhanced=enhanced
+            action_on_empty_result=f'{config.PUBLIC_URL}/api/twilio/no_input'
         )
     return Response(content=str(response), headers={"Content-Type": "text/xml"})
 
 
 @tw_router.post("/gather_unknown")
-async def gather_unknown(SpeechResult: str = Form(), CallSid: str = Form()) -> Response:
-    response = VoiceResponse()
+async def gather_unknown(SpeechResult: str = Form(default=None), CallSid: str = Form()) -> Response:
+    response = CustomVoiceResponse()
     current_response = await conv_engine.handle_user_input(SpeechResult)
-    response.say(current_response, voice=voice_type)
+    response.say(current_response)
     create_task(stream_ai_response(current_response))
     if conv_engine.system_action == SystemAction.accept:
         response.dial(number=data["caretaker"])
@@ -129,15 +102,21 @@ async def gather_unknown(SpeechResult: str = Form(), CallSid: str = Form()) -> R
         conv_engine.finish()
     elif conv_engine.system_action == SystemAction.continue_:
         response.gather(
-            input='speech',
-            language=language,
             action=f'{config.PUBLIC_URL}/api/twilio/gather_unknown',
-            timeout=timeout,
             partial_result_callback=f'{config.PUBLIC_URL}/api/twilio/partial_result',
-            partial_result_callback_method="POST",
-            speech_model=speechModel,
-            enhanced=enhanced
+            action_on_empty_result=f'{config.PUBLIC_URL}/api/twilio/no_input'
         )
+    return Response(content=str(response), headers={"Content-Type": "text/xml"})
+
+
+@tw_router.post("/no_input")
+async def no_input() -> Response:
+    response = CustomVoiceResponse()
+    text = "I am sorry but I did not heard you. Good bye"
+    response.say(text)
+    create_task(stream_ai_response(text))
+    response.hangup()
+    conv_engine.finish()
     return Response(content=str(response), headers={"Content-Type": "text/xml"})
 
 
@@ -160,7 +139,7 @@ async def get_partial_result(
 async def stream_ai_response(ai_response):
     UnstableSpeechResultList = []
     for word in ai_response.split():
-        await sleep(0.2)
+        await sleep(0.5)
         UnstableSpeechResultList.append(word)
         partial_speech = {
             "from_": "assistant",
