@@ -3,7 +3,7 @@ from twilio.twiml.voice_response import VoiceResponse
 
 
 class CustomVoiceResponse(VoiceResponse):
-    voice = "Polly.Arthur-Neural"
+    voice = "Polly.Emma-Neural"
 
     # gather parameters
     timeout = 3
