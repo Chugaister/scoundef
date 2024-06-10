@@ -37,7 +37,12 @@ async def set_webhook() -> None:
 
 conv_engine: Conversation | None = None
 voice_type = "Polly.Arthur-Neural"
-timeout = 5
+
+# gather parameters
+timeout = 3
+language = "en-GB"
+speechModel = "phone_call"      # phone_call | experimental_conversations | default
+enhanced = "true"               # true | false
 
 
 @tw_router.post("/voice")
@@ -60,10 +65,13 @@ async def voice(
         create_task(stream_ai_response(conv_engine.start_message))
         response.gather(
             input='speech',
+            language=language,
             action=f'{config.PUBLIC_URL}/api/twilio/gather_hidden',
             timeout=timeout,
             partial_result_callback=f'{config.PUBLIC_URL}/api/twilio/partial_result',
-            partial_result_callback_method="POST"
+            partial_result_callback_method="POST",
+            speech_model=speechModel,
+            enhanced=enhanced
         )
         return Response(content=str(response), headers={"Content-Type": "text/xml"})
     else:
@@ -72,10 +80,13 @@ async def voice(
         create_task(stream_ai_response(conv_engine.start_message))
         response.gather(
             input='speech',
+            language=language,
             action=f'{config.PUBLIC_URL}/api/twilio/gather_unknown',
             timeout=timeout,
             partial_result_callback=f'{config.PUBLIC_URL}/api/twilio/partial_result',
-            partial_result_callback_method="POST"
+            partial_result_callback_method="POST",
+            speech_model=speechModel,
+            enhanced=enhanced
         )
         return Response(content=str(response), headers={"Content-Type": "text/xml"})
 
@@ -93,10 +104,13 @@ async def gather_hidden(SpeechResult: str = Form(), CallSid: str = Form()) -> Re
     elif conv_engine.system_action == SystemAction.continue_:
         response.gather(
             input='speech',
+            language=language,
             action=f'{config.PUBLIC_URL}/api/twilio/gather_hidden',
             timeout=timeout,
             partial_result_callback=f'{config.PUBLIC_URL}/api/twilio/partial_result',
-            partial_result_callback_method="POST"
+            partial_result_callback_method="POST",
+            speech_model=speechModel,
+            enhanced=enhanced
         )
     return Response(content=str(response), headers={"Content-Type": "text/xml"})
 
@@ -114,7 +128,16 @@ async def gather_unknown(SpeechResult: str = Form(), CallSid: str = Form()) -> R
         response.hangup()
         conv_engine.finish()
     elif conv_engine.system_action == SystemAction.continue_:
-        response.gather(input='speech', action=f'{config.PUBLIC_URL}/api/twilio/gather_unknown', timeout=timeout)
+        response.gather(
+            input='speech',
+            language=language,
+            action=f'{config.PUBLIC_URL}/api/twilio/gather_unknown',
+            timeout=timeout,
+            partial_result_callback=f'{config.PUBLIC_URL}/api/twilio/partial_result',
+            partial_result_callback_method="POST",
+            speech_model=speechModel,
+            enhanced=enhanced
+        )
     return Response(content=str(response), headers={"Content-Type": "text/xml"})
 
 
