@@ -13,6 +13,8 @@ history = [
         "call_sid": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
         "from_": "+380000000000",
         "to_": "+10000000000",
+        "group": "allowed_list",
+        "timestamp": "2024-06-10T12:23:53.607Z",
         "threat": 4,
         "status": "finished",
         "messages": [
@@ -42,6 +44,8 @@ history = [
         "call_sid": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
         "from_": "+380000000000",
         "to_": "+10000000000",
+        "group": "allowed_list",
+        "timestamp": "2024-06-10T12:23:53.607Z",
         "threat": 4,
         "status": "finished",
         "messages": [
@@ -71,6 +75,8 @@ history = [
         "call_sid": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
         "from_": "+380000000000",
         "to_": "+10000000000",
+        "group": "allowed_list",
+        "timestamp": "2024-06-10T12:23:53.607Z",
         "threat": 4,
         "status": "finished",
         "messages": [

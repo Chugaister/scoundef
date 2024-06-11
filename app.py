@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi import Request
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from api import api_router
 from api.twilioapi.twilioapi import set_webhook
 from sys import argv
@@ -11,6 +12,13 @@ from utils.exceptions import CustomException
 
 app = FastAPI()
 app.include_router(api_router, prefix="/api")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.exception_handler(CustomException)

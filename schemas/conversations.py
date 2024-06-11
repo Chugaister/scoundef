@@ -21,11 +21,19 @@ class ConversationStatus(str, Enum):
     finished = "finished"
 
 
+class Group(str, Enum):
+    trusted_group = "trusted_group"
+    allowed_list = "allowed_list"
+    hidden = "hidden"
+    unknown = "unknown"
+
+
 class Conversation(BaseModel):
     call_sid: str
     from_: str
     to_: str
-    timestamp: datetime = Field(default=datetime.utcnow())
+    group: Group
+    timestamp: datetime
     threat: Optional[int]
     status: ConversationStatus
     messages: List[Message]
