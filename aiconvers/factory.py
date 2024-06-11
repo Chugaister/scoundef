@@ -26,13 +26,15 @@ You received a call from an unknown number. There are three main scenarios to co
 """
 
 
+START_MESSAGE = "Hi! I am an AI assistant pre-screening this call before I forward it to the recipient; note: this call is recorded. How may I assist you today?"
+
 class ConversationFactory:
 
     @staticmethod
     def unknown(call_sid: str, from_: str, to_: str) -> Conversation:
         return Conversation(
             system_prompt=SYSTEM_PROMPT,
-            start_message="Hello! I am AI secretary. Please, say who you are and provide a reason why are you calling this number. Note, that this call is being recorded",
+            start_message=START_MESSAGE,
             call_sid=call_sid,
             from_=from_,
             to_=to_
@@ -48,14 +50,13 @@ class ConversationFactory:
                 "who is likely a doctor to target user. The algorithm is so: first, they tell you about themselves, "
                 "and later you ask them for 7th digit of NHS number (National Healthcare service) "
                 "of the person they're calling to. If the person provides correct digit of NHS type goodbye message "
-                f"and type '<ACCEPT/>' as system output. However, if the person doesn't pass the auth challenge, i.e. doesn't give you the NHS digit,"
+                "and type '<ACCEPT/>' as system output. However, if the person doesn't pass the auth challenge, i.e. doesn't give you the NHS digit,"
                 "type '<DECLINE/>' after goodbye message. The 7th digit of patient's NHS is 3"
             ),
-            start_message=(
-                "Hello! I am AI secretary. Please, say who you are and provide a reason why are you"
-                "calling this number. Note, that this call is being recorded"
-            ),
+            start_message=START_MESSAGE,
             call_sid=call_sid,
             from_=from_,
             to_=to_
         )
+# the phone is the only direct contant
+# persona for care receiver
