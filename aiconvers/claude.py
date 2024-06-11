@@ -1,8 +1,11 @@
 from enum import Enum
-from anthropic import Anthropic
+from datetime import datetime
+from anthropic import AsyncAnthropic
 from utils.config import config
 from database.db import history
+from database.db import data
 from random import randint
+from schemas.conversations import Group
 
 
 class SystemAction(str, Enum):
@@ -484,15 +487,25 @@ Note: If you want the AI to output its entire response or parts of its response 
 
 class Conversation:
 
-    client = Anthropic(
+    client = AsyncAnthropic(
         api_key=config.ANTHROPIC_API_KEY,
     )
 
     def __init__(self, system_prompt: str, start_message: str, call_sid: str, from_: str, to_: str):
+        if from_ in data["allowed_list"]:
+            group = Group.allowed_list
+        elif from_ in data["trusted_group"]:
+            group = Group.trusted_group
+        elif from_.lower() == "anonymous":
+            group = Group.hidden
+        else:
+            group = Group.unknown
         self.history_dict = {
             "call_sid": call_sid,
             "from_": from_,
             "to_": to_,
+            "group": group,
+            "timestamp": datetime.utcnow(),
             "status": "active",
             "threat": None,
             "messages": [
@@ -511,7 +524,7 @@ class Conversation:
         self.messages = []
         self.system_action: SystemAction = SystemAction.continue_
 
-    def _get_response(
+    async def _get_response(
             self,
             user_input: str
     ) -> str:
@@ -525,7 +538,7 @@ class Conversation:
             ]
         }
         self.messages.append(new_user_message)
-        new_assistant_message = self.client.messages.create(
+        new_assistant_message = await self.client.messages.create(
             model="claude-3-opus-20240229",
             max_tokens=1000,
             temperature=0,
@@ -560,13 +573,13 @@ class Conversation:
         current_response = current_response.strip()
         return current_response
 
-    def handle_user_input(self, user_input: str) -> str:
+    async def handle_user_input(self, user_input: str) -> str:
         print("User:\n", user_input, "\n")
         self.history_dict["messages"].append({
             "from_": "user",
             "content": user_input
         })
-        current_response = self._get_response(user_input)
+        current_response = await self._get_response(user_input)
         self.system_action = self.define_system_action(current_response)
         sanitised_response = self._sanitize_response(current_response)
         print("AI secretary:\n", current_response, "\n")
@@ -578,4 +591,4 @@ class Conversation:
 
     def finish(self):
         self.history_dict["status"] = "finished"
-        self.history_dict["threat"] = randint(4, 7)
+        self.history_dict["threat"] = randint(3, 6)
