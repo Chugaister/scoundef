@@ -9,9 +9,9 @@ from schemas.conversations import Group
 
 
 class SystemAction(str, Enum):
-    accept = "-ACCEPT-"
-    decline = "-DECLINE-"
-    continue_ = "-CONTINUE-"
+    accept = "<ACCEPT"
+    decline = "<DECLINE"
+    continue_ = "<CONTINUE"
 
 
 class Conversation:
@@ -68,7 +68,7 @@ class Conversation:
         }
         self.messages.append(new_user_message)
         new_assistant_message = await self.client.messages.create(
-            model="claude-3-opus-20240229",
+            model="claude-3-haiku-20240307",
             max_tokens=1000,
             temperature=0,
             system=self.system_prompt,
