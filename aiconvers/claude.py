@@ -9,9 +9,9 @@ from schemas.conversations import Group
 
 
 class SystemAction(str, Enum):
-    accept = "<ACCEPT"
-    decline = "<DECLINE"
-    continue_ = "<CONTINUE"
+    accept = "<ACCEPT/>"
+    decline = "<DECLINE/>"
+    continue_ = "<CONTINUE/>"
 
 # @title Metaprompt Text
 metaprompt = '''Today you will be writing instructions to an eager, helpful, but inexperienced and unworldly AI assistant who needs careful instruction and examples to understand how best to behave. I will explain a task to you. You will write instructions that will direct the assistant on how best to accomplish the task consistently, accurately, and correctly. Here are some examples of tasks and instructions.
@@ -568,8 +568,8 @@ class Conversation:
 
     @staticmethod
     def _sanitize_response(current_response: str) -> str:
-        current_response = current_response.replace(SystemAction.accept.name.swapcase(), "")
-        current_response = current_response.replace(SystemAction.decline.name.swapcase(), "")
+        current_response = current_response.replace(SystemAction.accept.value, "")
+        current_response = current_response.replace(SystemAction.decline.value, "")
         current_response = current_response.strip()
         return current_response
 
@@ -582,7 +582,7 @@ class Conversation:
         current_response = await self._get_response(user_input)
         self.system_action = self.define_system_action(current_response)
         sanitised_response = self._sanitize_response(current_response)
-        print("AI secretary:\n", current_response, "\n")
+        print("AI secretary:\n", sanitised_response, "\n")
         self.history_dict["messages"].append({
             "from_": "assistant",
             "content": sanitised_response
