@@ -9,9 +9,9 @@ from schemas.conversations import Group
 
 
 class SystemAction(str, Enum):
-    accept = "-ACCEPT-"
-    decline = "-DECLINE-"
-    continue_ = "-CONTINUE-"
+    accept = "<ACCEPT"
+    decline = "<DECLINE"
+    continue_ = "<CONTINUE"
 
 # @title Metaprompt Text
 metaprompt = '''Today you will be writing instructions to an eager, helpful, but inexperienced and unworldly AI assistant who needs careful instruction and examples to understand how best to behave. I will explain a task to you. You will write instructions that will direct the assistant on how best to accomplish the task consistently, accurately, and correctly. Here are some examples of tasks and instructions.
@@ -539,8 +539,8 @@ class Conversation:
         }
         self.messages.append(new_user_message)
         new_assistant_message = await self.client.messages.create(
-            model="claude-3-opus-20240229",
-            max_tokens=1000,
+            model="claude-3-haiku-20240307",
+            max_tokens=256,
             temperature=0,
             system=self.system_prompt,
             messages=self.messages
