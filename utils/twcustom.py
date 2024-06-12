@@ -6,7 +6,7 @@ class CustomVoiceResponse(VoiceResponse):
     voice = "Polly.Emma-Neural"
 
     # gather parameters
-    timeout = 3
+    timeout = 1
     language = "en-GB"
     speech_model = "phone_call"  # phone_call | experimental_conversations | default
     enhanced = "true"  # true | false
