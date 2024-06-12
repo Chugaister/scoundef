@@ -3,8 +3,8 @@ from twilio.twiml.voice_response import VoiceResponse
 
 
 class CustomVoiceResponse(VoiceResponse):
-    # voice = "Polly.Emma-Neural"
-    voice = "Polly.Amy-Neural"
+    voice = "Polly.Emma-Neural"
+    # voice = "Polly.Amy-Neural" # AI can't pronounce "AI"
 
     # gather parameters
     timeout_in_seconds = 0.8
