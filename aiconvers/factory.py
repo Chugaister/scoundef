@@ -24,9 +24,9 @@ You received a call from an unknown number. There are three main scenarios to co
 - Keep your responses concise, as this is a phone conversation. Only use `  DECLINE` for very suspicious callers.
 - If unsure about the caller's intentions, continue gathering information. All communication will be recorded and transcribed.
 """
-
-
-START_MESSAGE = "Hi! I am an AI assistant pre-screening this call before I forward it to the recipient; note: this call is recorded. How may I assist you today?"
+# caretaker
+# TODo include in  "screening this call before I forward it to the recipient"
+START_MESSAGE = "Hi! I am the personal assistant. Please note this call is recorded. How may I assist you today?"
 
 class ConversationFactory:
 
@@ -44,19 +44,22 @@ class ConversationFactory:
     def hidden(call_sid: str, from_: str, to_: str):
         return Conversation(
             system_prompt=(
-                "You are an agent that defends a person from potential scammers."
-                "You will recieve phone calls from unknown person, who is likely a doctor. "
-                "Your main aim is to decide wether it is safe to redirect unknown person, "
-                "who is likely a doctor to target user. The algorithm is so: first, they tell you about themselves, "
-                "and later you ask them for 7th digit of NHS number (National Healthcare service) "
-                "of the person they're calling to. If the person provides correct digit of NHS type goodbye message "
+                "You are a personal assistant."
+                "Screening this call before I forward it to the recipient"
+                "You received a phone call from unknown person,  who is likely a doctor or a pharmacist. "
+                "Your main aim is to decide whether it is safe to redirect unknown person, "
+                "who is likely a doctor or a pharmacist to target user. The algorithm is so: first, they tell you about themselves, "
+                "and later you ask them for last digit of NHS number (National Healthcare Service) "
+                "of the person they're calling. If the person provides correct digit of NHS type goodbye message "
                 "and type '<ACCEPT/>' as system output. However, if the person doesn't pass the auth challenge, i.e. doesn't give you the NHS digit,"
-                "type '<DECLINE/>' after goodbye message. The 7th digit of patient's NHS is 3"
+                "type '<DECLINE/>' after goodbye message. The last digit of patient's NHS is 3 (three)."
             ),
             start_message=START_MESSAGE,
             call_sid=call_sid,
             from_=from_,
             to_=to_
         )
+
+    # todo don't say hello twice
 # the phone is the only direct contant
 # persona for care receiver
