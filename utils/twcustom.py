@@ -4,9 +4,10 @@ from twilio.twiml.voice_response import VoiceResponse
 
 class CustomVoiceResponse(VoiceResponse):
     voice = "Polly.Emma-Neural"
+    # voice = "Polly.Amy-Neural" # AI can't pronounce "AI"
 
     # gather parameters
-    timeout = 1
+    timeout_in_seconds = 0.8
     language = "en-GB"
     speech_model = "phone_call"  # phone_call | experimental_conversations | default
     enhanced = "true"  # true | false
@@ -41,7 +42,7 @@ class CustomVoiceResponse(VoiceResponse):
             action=action,
             method="POST",
             timeout=timeout,
-            speech_timeout=self.timeout,
+            speech_timeout=self.timeout_in_seconds,
             max_speech_time=120,
             profanity_filter=profanity_filter,
             finish_on_key=finish_on_key,

@@ -1,4 +1,6 @@
 from os import getenv
+from pathlib import Path
+
 from dotenv import load_dotenv
 
 
@@ -22,6 +24,7 @@ class Config:
         self.NGROK_AUTH_TOKEN = self.get_var("NGROK_AUTH_TOKEN", optional=True)
         self.ANTHROPIC_API_KEY = self.get_var("ANTHROPIC_API_KEY")
         self.DATA_FILE_PATH = self.get_var("DATA_FILE_PATH")
+        self.DATA_FILE_PATH = Path(self.DATA_FILE_PATH)
 
     @staticmethod
     def get_var(item: str, optional: bool = False):
