@@ -566,6 +566,7 @@ class Conversation:
         else:
             return SystemAction.continue_
 
+# hidden number expected question "2) Before I can connect you, I'd like to do a quick verification. Could you please provide me with the last digit of the NHS number you have on file."
     @staticmethod
     def _sanitize_response(current_response: str) -> str:
         current_response = current_response.replace(SystemAction.accept.value, "")
