@@ -4,12 +4,12 @@ from utils.config import config
 
 
 class CustomVoiceResponse(VoiceResponse):
-    voice = "Polly.Emma-Neural"
+    voice = config.lang_settings["voice"]
     # voice = "Polly.Amy-Neural" # AI can't pronounce "AI"
 
     # gather parameters
     timeout_in_seconds = 0.8
-    language = config.LANGUAGE
+    language = config.lang_settings["tts_lang"]
     speech_model = "phone_call"  # phone_call | experimental_conversations | default
     enhanced = "true"  # true | false
 

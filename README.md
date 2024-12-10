@@ -13,7 +13,7 @@
 
 * fill in .env file (including ngrok auth token)
 
-Supported languages: "en-GB", "ar-LB"
+Supported languages: "en", "ar"
 
 * make file database/data.json and fill it as in data.json.example
 

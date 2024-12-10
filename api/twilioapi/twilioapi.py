@@ -19,12 +19,12 @@ from database.db import data
 
 prepared_text = {
     "redirecting": {
-        "en-GB": "Redirecting to recipient. Please wait a moment",
-        "ar-LB": "إعادة التوجيه إلى المستلم. يرجى الانتظار لحظة"
+        "en": "Redirecting to recipient. Please wait a moment",
+        "ar": "إعادة التوجيه إلى المستلم. يرجى الانتظار لحظة"
     },
     "hangup": {
-        "en-GB": "I am sorry but I did not heard you. Good bye",
-        "ar-LB": "أنا آسف ولكنني لم أسمعك. وداعاً"
+        "en": "I am sorry but I did not heard you. Good bye",
+        "ar": "أنا آسف ولكنني لم أسمعك. وداعاً"
     }
 }
 

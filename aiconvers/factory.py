@@ -28,7 +28,13 @@ You received a call from an unknown number. There are three main scenarios to co
 """
 # caretaker
 # TODo include in  "screening this call before I forward it to the recipient"
-START_MESSAGE = "Hi! I am the personal assistant. Please note this call is recorded. How may I assist you today?"
+
+start_messages = {
+    "en": "Hi! I am the personal assistant. Please note this call is recorded. How may I assist you today?",
+    "ar": "مرحباً، أنا المساعد الشخصي. يرجى ملاحظة أن هذه المكالمة مسجلة. كيف يمكنني مساعدتك اليوم؟"
+}
+
+START_MESSAGE = start_messages[config.LANGUAGE]
 
 class ConversationFactory:
 

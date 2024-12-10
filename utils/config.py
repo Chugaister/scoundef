@@ -10,7 +10,19 @@ class EnvVariableNotFound(Exception):
 
 class Config:
 
-    supported_languages = ["en-GB", "ar-LB"]
+    lang_settings_list = {
+        "en": {
+            "stt_lang": "en-GB",
+            "tts_lang": "en-GB",
+            "voice": "Polly.Emma-Neural"
+        },
+        "ar": {
+            "stt_lang": "ar-LB",
+            "tts_lang": "ar-XA",
+            "voice": "Google.ar-XA-Wavenet-A"
+        }
+    }
+    supported_languages = ["en", "ar"]
     def __init__(self):
         load_dotenv()
         self.HOST = self.get_var("HOST")
@@ -28,6 +40,7 @@ class Config:
         self.LANGUAGE = self.get_var("LANGUAGE")
         if self.LANGUAGE not in self.supported_languages:
             raise ValueError("Unsupported language specified. See README.md")
+        self.lang_settings = self.lang_settings_list[self.LANGUAGE]
 
     @staticmethod
     def get_var(item: str, optional: bool = False):
