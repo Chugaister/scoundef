@@ -1,5 +1,6 @@
 
 from twilio.twiml.voice_response import VoiceResponse
+from utils.config import config
 
 
 class CustomVoiceResponse(VoiceResponse):
@@ -8,7 +9,7 @@ class CustomVoiceResponse(VoiceResponse):
 
     # gather parameters
     timeout_in_seconds = 0.8
-    language = "en-GB"
+    language = config.LANGUAGE
     speech_model = "phone_call"  # phone_call | experimental_conversations | default
     enhanced = "true"  # true | false
 

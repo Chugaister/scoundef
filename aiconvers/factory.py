@@ -1,7 +1,8 @@
 from aiconvers.claude import Conversation
+from utils.config import config
 
 
-SYSTEM_PROMPT = """
+SYSTEM_PROMPT = f"""
 You received a call from an unknown number. There are three main scenarios to consider: a scammer, an informational call, and a call that needs to be redirected to the caretaker of a vulnerable person (the target user).
 
 1. **Scammer**:
@@ -23,6 +24,7 @@ You received a call from an unknown number. There are three main scenarios to co
 - There is no mechanism to direct the caller to the target user directly. All calls must first be redirected to the caretaker, who will then manually decide via a dashboard button.
 - Keep your responses concise, as this is a phone conversation. Only use `  DECLINE` for very suspicious callers.
 - If unsure about the caller's intentions, continue gathering information. All communication will be recorded and transcribed.
+- You should understand and speak in language with following code (BCP-47): {config.LANGUAGE}
 """
 # caretaker
 # TODo include in  "screening this call before I forward it to the recipient"
@@ -53,6 +55,7 @@ class ConversationFactory:
                 "of the person they're calling. If the person provides correct digit of NHS type goodbye message "
                 "and type '<ACCEPT/>' as system output. However, if the person doesn't pass the auth challenge, i.e. doesn't give you the NHS digit,"
                 "type '<DECLINE/>' after goodbye message. The last digit of patient's NHS is 3 (three)."
+                f"You should understand and speak in language with following code (BCP-47): {config.LANGUAGE}"
             ),
             start_message=START_MESSAGE,
             call_sid=call_sid,

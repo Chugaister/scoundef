@@ -13,6 +13,8 @@
 
 * fill in .env file (including ngrok auth token)
 
+Supported languages: "en-GB", "ar-LB"
+
 * make file database/data.json and fill it as in data.json.example
 
 * run the project `python main.py --local`
