@@ -17,6 +17,18 @@ from utils.twcustom import CustomVoiceResponse
 from database.db import data
 
 
+prepared_text = {
+    "redirecting": {
+        "en": "Redirecting to recipient. Please wait a moment",
+        "ar": "إعادة التوجيه إلى المستلم. يرجى الانتظار لحظة"
+    },
+    "hangup": {
+        "en": "I am sorry but I did not heard you. Good bye",
+        "ar": "أنا آسف ولكنني لم أسمعك. وداعاً"
+    }
+}
+
+
 tw_router = APIRouter(tags=["Twilio API"])
 
 
@@ -47,7 +59,7 @@ async def voice(
     response = CustomVoiceResponse()
     global conv_engine
     if From in data["trusted_group"]:
-        text = "Redirecting to recipient. Please wait a moment"
+        text = prepared_text["redirecting"][config.LANGUAGE]
         response.say(text)
         create_task(stream_ai_response(text))
         response.dial(data["recipient"])
@@ -63,7 +75,8 @@ async def voice(
     response.gather(
         action=action,
         partial_result_callback=f'{config.PUBLIC_URL}/api/twilio/partial_result',
-        action_on_empty_result=f'{config.PUBLIC_URL}/api/twilio/no_input'
+        action_on_empty_result=f'{config.PUBLIC_URL}/api/twilio/no_input',
+        language=config.LANGUAGE
     )
     response.redirect(f"{config.PUBLIC_URL}/api/twilio/no_input")
     return Response(content=str(response), headers={"Content-Type": "text/xml"})
@@ -83,7 +96,8 @@ async def gather_hidden(SpeechResult: str = Form(default=None), CallSid: str = F
         response.gather(
             action=f'{config.PUBLIC_URL}/api/twilio/gather_hidden',
             partial_result_callback=f'{config.PUBLIC_URL}/api/twilio/partial_result',
-            action_on_empty_result=f'{config.PUBLIC_URL}/api/twilio/no_input'
+            action_on_empty_result=f'{config.PUBLIC_URL}/api/twilio/no_input',
+            language=config.LANGUAGE
         )
     return Response(content=str(response), headers={"Content-Type": "text/xml"})
 
@@ -104,7 +118,8 @@ async def gather_unknown(SpeechResult: str = Form(default=None), CallSid: str = 
         response.gather(
             action=f'{config.PUBLIC_URL}/api/twilio/gather_unknown',
             partial_result_callback=f'{config.PUBLIC_URL}/api/twilio/partial_result',
-            action_on_empty_result=f'{config.PUBLIC_URL}/api/twilio/no_input'
+            action_on_empty_result=f'{config.PUBLIC_URL}/api/twilio/no_input',
+            language=config.LANGUAGE
         )
     return Response(content=str(response), headers={"Content-Type": "text/xml"})
 
@@ -112,7 +127,7 @@ async def gather_unknown(SpeechResult: str = Form(default=None), CallSid: str = 
 @tw_router.post("/no_input")
 async def no_input() -> Response:
     response = CustomVoiceResponse()
-    text = "I am sorry but I did not heard you. Good bye"
+    text = prepared_text["hangup"][config.LANGUAGE]
     response.say(text)
     create_task(stream_ai_response(text))
     response.hangup()

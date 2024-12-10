@@ -10,6 +10,19 @@ class EnvVariableNotFound(Exception):
 
 class Config:
 
+    lang_settings_list = {
+        "en": {
+            "stt_lang": "en-GB",
+            "tts_lang": "en-GB",
+            "voice": "Polly.Emma-Neural"
+        },
+        "ar": {
+            "stt_lang": "ar-LB",
+            "tts_lang": "ar-XA",
+            "voice": "Google.ar-XA-Wavenet-A"
+        }
+    }
+    supported_languages = ["en", "ar"]
     def __init__(self):
         load_dotenv()
         self.HOST = self.get_var("HOST")
@@ -23,8 +36,11 @@ class Config:
         self.SSL_CA_BUNDLE_FILE_PATH = self.get_var("SSL_CA_BUNDLE_FILE_PATH", optional=True)
         self.NGROK_AUTH_TOKEN = self.get_var("NGROK_AUTH_TOKEN", optional=True)
         self.ANTHROPIC_API_KEY = self.get_var("ANTHROPIC_API_KEY")
-        self.DATA_FILE_PATH = self.get_var("DATA_FILE_PATH")
-        self.DATA_FILE_PATH = Path(self.DATA_FILE_PATH)
+        self.DATA_FILE_PATH = Path(self.get_var("DATA_FILE_PATH"))
+        self.LANGUAGE = self.get_var("LANGUAGE")
+        if self.LANGUAGE not in self.supported_languages:
+            raise ValueError("Unsupported language specified. See README.md")
+        self.lang_settings = self.lang_settings_list[self.LANGUAGE]
 
     @staticmethod
     def get_var(item: str, optional: bool = False):
